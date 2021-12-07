@@ -1,8 +1,8 @@
 module Calabash
   module Android
 
-    VERSION = "0.9.12.uia8"
-    # Server Commit 976ba30dda3808735d60eb20aa7cfeb57034f2bc     patch AccessibilityNodeInfoDumper to include all the non-visible elements and dump everything
+    VERSION = "0.9.12.uia10"
+    # Server Commit 6b8a1ad9b645df91a297d4c85ff202e6f0cdda27     patch AccessibilityNodeInfoDumper to include all the non-visible elements and dump everything
 
 
     # A model of a software release version that can be used to compare two versions.
