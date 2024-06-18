@@ -166,46 +166,25 @@ end
 
 def fingerprint_from_apk(app_path)
   app_path = File.expand_path(app_path)
-  Dir.mktmpdir do |tmp_dir|
-    Dir.chdir(tmp_dir) do
-      FileUtils.cp(app_path, "app.apk")
-      FileUtils.mkdir("META-INF")
-
-      Calabash::Utils.with_silent_zip do
-        Zip::File.foreach("app.apk") do |z|
-          z.extract if /^META-INF\/\w+\.(rsa|dsa)$/i =~ z.name
-        end
-      end
-
-      signature_files = Dir["#{tmp_dir}/META-INF/*"]
-
-      log 'Signature files:'
-
-      signature_files.each do |signature_file|
-        log signature_file
-      end
-
-      raise "No signature files found in META-INF. Cannot proceed." if signature_files.empty?
-      raise "More than one signature file (DSA or RSA) found in META-INF. Cannot proceed." if signature_files.length > 1
-
-      cmd = "\"#{Calabash::Android::Dependencies.keytool_path}\" -v -printcert -J\"-Dfile.encoding=utf-8\" -file \"#{signature_files.first}\""
-      log cmd
-      fingerprints = `#{cmd}`
-      md5_fingerprint = extract_sha1_fingerprint(fingerprints)
-      log "SHA1 fingerprint for signing cert (#{app_path}): #{md5_fingerprint}"
-      md5_fingerprint
-    end
-  end
-end
-
-def extract_md5_fingerprint(fingerprints)
-  m = fingerprints.scan(/MD5.*((?:[a-fA-F\d]{2}:){15}[a-fA-F\d]{2})/).flatten
-  raise "No MD5 fingerprint found:\n #{fingerprints}" if m.empty?
-  m.first
+  cmd = "\"#{Calabash::Android::Dependencies.apksigner_path}\" verify --print-certs --verbose \"#{app_path}\""
+  log cmd
+  fingerprints = `#{cmd}`
+  sha1_fingerprint = extract_sha1_fingerprint(fingerprints)
+  log "SHA1 fingerprint for signing cert (#{app_path}): #{sha1_fingerprint}"
+  sha1_fingerprint
 end
 
 def extract_sha1_fingerprint(fingerprints)
-  m = fingerprints.scan(/SHA1.*((?:[a-fA-F\d]{2}:){15}[a-fA-F\d]{2})/).flatten
+  # Try to parse keytool data
+  m = fingerprints.scan(/SHA1.*((?:[a-fA-F\d]{2}:){19}[a-fA-F\d]{2})/).flatten
+  if m.empty?
+    # Try to parse apksigner data
+    m = fingerprints.scan(/SHA-1.*\b([a-f0-9]{40})\b/).flatten
+    # Transform it to keytool compatible format
+    unless m.empty?
+      return m.first.scan(/../).map(&:upcase).join(':')
+    end
+  end
   raise "No SHA1 fingerprint found:\n #{fingerprints}" if m.empty?
   m.first
 end

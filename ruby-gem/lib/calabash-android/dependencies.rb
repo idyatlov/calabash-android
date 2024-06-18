@@ -68,6 +68,10 @@ module Calabash
                 android_dependencies(:zipalign_path)
             end
 
+            def self.apksigner_path
+                android_dependencies(:apksigner_path)
+            end
+
             def self.android_jar_path
                 android_dependencies(:android_jar_path)
             end
@@ -229,6 +233,12 @@ module Calabash
                 aapt_path = scan_for_path(android_sdk_location, aapt_executable, tools_directories(android_sdk_location))
                 zipalign_path = scan_for_path(android_sdk_location, zipalign_executable, tools_directories(android_sdk_location))
 
+                if ENV['APKSIGNER_PATH']
+                    apksigner_path = ENV['APKSIGNER_PATH']
+                else
+                    apksigner_path = scan_for_path(android_sdk_location, apksigner_executable, tools_directories(android_sdk_location))
+                end
+
                 if adb_path.nil?
                     raise Environment::InvalidEnvironmentError,
                           "Could not find '#{adb_executable}' in '#{android_sdk_location}'"
@@ -244,8 +254,14 @@ module Calabash
                           "Could not find '#{zipalign_executable}' in '#{android_sdk_location}'"
                 end
 
+                if apksigner_path.nil?
+                    raise Environment::InvalidEnvironmentError,
+                          "Could not find '#{apksigner_executable}' in '#{android_sdk_location}'"
+                end
+
                 Logging.log_debug("Set aapt path to '#{aapt_path}'")
                 Logging.log_debug("Set zipalign path to '#{zipalign_path}'")
+                Logging.log_debug("Set apksigner path to '#{apksigner_path}'")
                 Logging.log_debug("Set adb path to '#{adb_path}'")
 
                 android_jar_path = scan_for_path(File.join(android_sdk_location, 'platforms'), 'android.jar', [File.basename(platform_directory(android_sdk_location))])
@@ -260,6 +276,7 @@ module Calabash
                 {
                     aapt_path: aapt_path,
                     zipalign_path: zipalign_path,
+                    apksigner_path: apksigner_path,
                     adb_path: adb_path,
                     android_jar_path: android_jar_path
                 }
@@ -484,6 +501,10 @@ module Calabash
 
             def self.zipalign_executable
                 is_windows? ? 'zipalign.exe' : 'zipalign'
+            end
+
+            def self.apksigner_executable
+                is_windows? ? 'apksigner.exe' : 'apksigner'
             end
 
             def self.jarsigner_executable

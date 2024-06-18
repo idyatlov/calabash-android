@@ -1,7 +1,7 @@
 module Calabash
   module Android
 
-    VERSION = "0.9.12.uia10"
+    VERSION = "0.9.12.uia11"
     # Server Commit 6b8a1ad9b645df91a297d4c85ff202e6f0cdda27     patch AccessibilityNodeInfoDumper to include all the non-visible elements and dump everything
 
 

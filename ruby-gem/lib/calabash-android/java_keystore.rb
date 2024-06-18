@@ -62,23 +62,20 @@ class JavaKeystore
     log "Signing using the digest algorithm: '#{digest_algorithm}'"
 
     cmd_args = {
-      '-sigfile' => 'CERT',
-      '-sigalg' => signing_algorithm,
-      '-digestalg' => digest_algorithm,
-      '-signedjar' => dest_path,
-      '-storepass' => password,
-      '-keystore' =>  location,
+      '--ks-key-alias' => keystore_alias,
+      '--ks-pass' => "pass:#{password}",
+      '--ks' =>  location,
     }
 
     unless @key_password.nil?
-      cmd_args['-keypass'] = @key_password
+      cmd_args['--key-pass'] = "pass:#{@key_password}"
     end
 
     cmd_args = cmd_args.flatten
+    cmd_args.unshift('sign')
     cmd_args << apk_path
-    cmd_args << keystore_alias
 
-    result = system_with_stdout_on_success(Calabash::Android::Dependencies.jarsigner_path, *cmd_args)
+    result = system_with_stdout_on_success(Calabash::Android::Dependencies.apksigner_path, *cmd_args)
 
     unless result
       raise "Could not sign app: #{apk_path}"
