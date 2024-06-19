@@ -92,7 +92,11 @@ def checksum(file_path)
 end
 
 def test_server_path(apk_file_path)
-  "test_servers/#{checksum(apk_file_path)}_#{Calabash::Android::VERSION}.apk"
+  if ENV['TEST_APP_PATH']
+    ENV['TEST_APP_PATH']
+  else
+    "test_servers/#{checksum(apk_file_path)}_#{Calabash::Android::VERSION}.apk"
+  end
 end
 
 def build_test_server_if_needed(app_path)
