@@ -80,6 +80,8 @@ class JavaKeystore
     unless result
       raise "Could not sign app: #{apk_path}"
     end
+
+    FileUtils.cp(apk_path, dest_path)
   end
 
   def system_with_stdout_on_success(cmd, *args)
