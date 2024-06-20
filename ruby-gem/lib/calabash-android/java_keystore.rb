@@ -62,6 +62,7 @@ class JavaKeystore
     log "Signing using the digest algorithm: '#{digest_algorithm}'"
 
     cmd_args = {
+      '--out' => dest_path,
       '--ks-key-alias' => keystore_alias,
       '--ks-pass' => "pass:#{password}",
       '--ks' =>  location,
@@ -80,8 +81,6 @@ class JavaKeystore
     unless result
       raise "Could not sign app: #{apk_path}"
     end
-
-    FileUtils.cp(apk_path, dest_path)
   end
 
   def system_with_stdout_on_success(cmd, *args)
